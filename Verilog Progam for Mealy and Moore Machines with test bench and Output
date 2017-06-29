@@ -1,0 +1,195 @@
+There are two types of State machines:
+1)Mealy Machine
+2) Moore machine
+The Verilog code of both machines are given below. Execute them and analyze the difference. You can download the programs at the end along with the outputs.
+MEALY MACHINE
+Mealy machine is a state machine whose output is determined by the current state and the current inputs.
+
+module mealy_ssm(rst,clk,x1,y,z1);
+input rst,clk,x1;
+output z1;
+output[1:3]y;
+reg[1:3]y,next_state;
+wire z1;
+ parameter    state_a=3'b000,
+              state_b=3'b001,
+          state_c=3'b011,
+          state_d=3'b010,
+          state_e=3'b100;
+    always @(posedge clk)
+    begin
+     if(~rst)
+      y<=state_a;
+     else
+       y<=next_state;
+    end
+ 
+assign z1=(y[1] & ~x1 & clk)|(y[2] & y[3] & x1 & clk);
+always @(y or x1)
+begin
+    case(y)
+      state_a:
+        if(x1==0)
+            next_state=state_b;
+        else
+            next_state=state_d;
+         state_b:
+        if(x1==0)
+            next_state=state_c;
+        else
+            next_state=state_e;
+        state_c:
+              next_state=state_a;
+         state_d:
+        if(x1==0)
+            next_state=state_e;
+        else
+            next_state=state_c;
+        state_e:
+next_state=state_a;
+default:next_state=state_a;
+endcase
+end
+endmodule
+ 
+//test bench//
+module mealy_ssm_tb_5372();
+reg rst,clk,x1;
+wire [1:3]y;
+wire z1;
+initial
+begin
+   $monitor("x1=%b,state=%b,z1=%b",x1,y,z1);
+clk=1'b0;
+forever
+     #10  clk=~clk;
+end
+ 
+initial
+begin
+#0
+    rst=1'b0;
+    x1=1'b0;
+#10
+rst=1'b1;
+  x1=1'b0;@ (posedge clk)  
+  x1=1'b0;@ (posedge clk)  
+  x1=1'b0;@ (posedge clk)  
+  x1=1'b1;@ (posedge clk)  
+  x1=1'b0;@ (posedge clk)  
+  x1=1'b1;@ (posedge clk)  
+  x1=1'b0;@ (posedge clk)  
+  x1=1'b1;@ (posedge clk)  
+  x1=1'b0;@ (posedge clk)  
+  x1=1'b1;@ (posedge clk)  
+  x1=1'b1;@ (posedge clk)  
+  x1=1'b1;@ (posedge clk)
+   x1=1'b1;@ (posedge clk) 
+   x1=1'b1;@ (posedge clk) 
+ 
+#20  $stop;
+end
+ mealy_ssm a1(rst,clk,x1,y,z1);
+ endmodule
+MOORE MACHINE
+
+Moore machine is state machine whose output is a function of only the current state.
+The code is as follows:
+
+module moore_ssm(rst,clk,x1,y,z1);
+input rst,clk,x1;
+output[1:3]y;
+output z1;
+reg[1:3]y,next_state;
+wire z1;
+parameter   state_a=3'b000,
+                    state_b=3'b010,
+            state_c=3'b110,
+            state_d=3'b100,
+            state_e=3'b011;
+    always@(posedge clk)
+    begin
+       if(~rst)
+         y<=state_a;
+        else
+         y<=next_state;
+         end
+ 
+assign z1=~clk &y[3];
+ 
+      always@(y or x1)
+      begin
+        case(y)
+             state_a:
+                    if(x1==0)
+                        next_state=state_a;
+            else
+               next_state=state_b;
+         state_b:
+                    if(x1==0)
+                        next_state=state_a;
+            else
+               next_state=state_c;
+             state_c:
+                    if(x1==0)
+                        next_state=state_d;
+            else
+               next_state=state_c;
+         state_d:
+                    if(x1==0)
+                        next_state=state_a;
+            else
+               next_state=state_e;
+         state_e:
+                    if(x1==0)
+                        next_state=state_a;
+            else
+               next_state=state_c; 
+         default:next_state=state_a;
+endcase
+end
+endmodule
+ 
+//test bench//
+`timescale 1 ns/1 ps
+module moore_ssm_tb_5372();
+reg rst,clk,x1;
+wire[1:3]y;
+wire z1;
+ 
+initial
+begin
+clk=1'b0;
+   forever
+    #10 clk=~clk;
+end
+ 
+initial
+begin
+  $monitor("%g,rst=%b,clk=%b,x1=%b,y=%b,z1=%b",$time,rst,clk,x1,y,z1);
+#0 rst=1'b0;
+  x1=1'b0;
+#5  rst=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+    x1=1'b1;@  (posedge clk)
+    x1=1'b0;@  (posedge clk)
+ 
+#10 $stop;
+end
+ 
+moore_ssm a1(rst,clk,x1,y,z1);
+endmodule
